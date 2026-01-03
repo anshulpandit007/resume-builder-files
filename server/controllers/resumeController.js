@@ -113,116 +113,129 @@ const updateGithubFile = async (user_id, resume) => {
     }
 };
 
+
 const getResume = asyncHandler(async (req, res) => {
-    try {
-        const user = req.user;
-        console.log("User ID:", user._id, "Resume ID:", user.resume);
+  try {
+    const user = req.user;
+    console.log("User ID:", user._id, "Resume ID:", user.resume);
 
-        // Verify resume exists
-        if (!user.resume) {
-            console.log("No resume ID found for user");
-            return res.status(400).json({ error: "No resume ID found for user" });
-        }
-
-        const resume = await Resume.findById(user.resume);
-        if (!resume) {
-            console.log("Resume not found in database for ID:", user.resume);
-            return res.status(404).json({ error: "Resume not found in database" });
-        }
-
-        // Generate LaTeX content
-        const introTex = getIntroTex(resume.intro || {});
-        const eduTex = getEduTex(resume.edu || []);
-        const expTex = getExpTex(resume.exp || []);
-        const projectsTex = getProjectsTex(resume.projects || []);
-        const achTex = getAchTex(resume.ach || []);
-        const skillsTex = getSkillsTex(resume.skills || []);
-        const profilesTex = getProfilesTex(resume.profiles || []);
-        const resumeTex =
-            headerTex +
-            introTex +
-            eduTex +
-            expTex +
-            projectsTex +
-            achTex +
-            skillsTex +
-            profilesTex +
-            footerTex;
-
-        console.log("Generated LaTeX content (first 500 chars):", resumeTex.substring(0, 500) + (resumeTex.length > 500 ? "..." : ""));
-
-        // Validate the generated LaTeX content
-        const validation = validateLatexContent(resumeTex);
-        if (!validation.isValid) {
-            console.error("Invalid LaTeX content:", validation.message);
-            return res.status(400).json({ error: "Invalid LaTeX content", details: validation.message });
-        }
-
-        // Upload to GitHub
-        try {
-            if (req.user.isResumeFile) {
-                await updateGithubFile(req.user._id, resumeTex);
-            } else {
-                await createGithubFile(req.user._id, resumeTex);
-                await User.findOneAndUpdate(
-                    { _id: req.user._id },
-                    { isResumeFile: true },
-                    { new: true }
-                );
-            }
-
-            // Proxy the latexonline.cc request
-            const compileUrl = `https://latexonline.cc/compile?git=https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}&target=${req.user._id}.tex&command=pdflatex`;
-            console.log("Fetching compilation from:", compileUrl);
-            const compileResponse = await axios.get(compileUrl, { responseType: "arraybuffer" }).catch((e) => {
-                console.error("Error fetching from latexonline.cc:", e.message);
-                throw new Error("Failed to fetch compilation result: " + e.message);
-            });
-
-            // Log response details for debugging
-            console.log("Response headers:", compileResponse.headers);
-            console.log("Response content-type:", compileResponse.headers["content-type"]);
-
-            // Check if the response is a PDF
-            if (compileResponse.headers["content-type"] === "application/pdf") {
-                // Set response headers to serve the PDF
-                res.setHeader("Content-Type", "application/pdf");
-                res.setHeader("Content-Disposition", `inline; filename="resume_${req.user._id}.pdf"`);
-                return res.send(compileResponse.data);
-            }
-
-            // If not a PDF, attempt to parse as JSON (for potential error cases)
-            let compileData;
-            try {
-                compileData = JSON.parse(compileResponse.data.toString());
-            } catch (e) {
-                console.error("Failed to parse latexonline.cc response as JSON:", e.message);
-                return res.status(500).json({
-                    error: "Failed to parse compilation response",
-                    details: "Received non-JSON response from latexonline.cc",
-                });
-            }
-
-            if (compileData.status === "success") {
-                console.log("LaTeX compilation successful. PDF URL:", compileData.download);
-                return res.json({ pdfUrl: compileData.download });
-            } else {
-                console.error("LaTeX compilation failed:", compileData.log || "No log provided");
-                return res.status(500).json({
-                    error: "LaTeX compilation failed",
-                    log: compileData.log || "No error details available",
-                });
-            }
-        } catch (e) {
-            console.error("GitHub or compilation error:", e.message);
-            return res.status(500).json({ error: "Something went wrong", details: e.message });
-        }
-    } catch (e) {
-        console.error("Resume generation error:", e.message);
-        return res.status(500).json({ error: "Failed to generate resume", details: e.message });
+    if (!user.resume) {
+      console.log("No resume ID found for user");
+      return res.status(400).json({ error: "No resume ID found for user" });
     }
-});
 
+    const resume = await Resume.findById(user.resume);
+    if (!resume) {
+      console.log("Resume not found in database for ID:", user.resume);
+      return res.status(404).json({ error: "Resume not found in database" });
+    }
+
+    // build latex tex
+    const introTex = getIntroTex(resume.intro || {});
+    const eduTex = getEduTex(resume.edu || []);
+    const expTex = getExpTex(resume.exp || []);
+    const projectsTex = getProjectsTex(resume.projects || []);
+    const achTex = getAchTex(resume.ach || []);
+    const skillsTex = getSkillsTex(resume.skills || []);
+    const profilesTex = getProfilesTex(resume.profiles || []);
+    const resumeTex =
+      headerTex +
+      introTex +
+      eduTex +
+      expTex +
+      projectsTex +
+      achTex +
+      skillsTex +
+      profilesTex +
+      footerTex;
+
+    // validate LaTeX minimal structure
+    const validation = validateLatexContent(resumeTex);
+    if (!validation.isValid) {
+      console.error("Invalid LaTeX content:", validation.message);
+      return res.status(400).json({ error: "Invalid LaTeX content", details: validation.message });
+    }
+
+    // upload or update GitHub file
+    try {
+      if (req.user.isResumeFile) {
+        await updateGithubFile(req.user._id, resumeTex);
+      } else {
+        await createGithubFile(req.user._id, resumeTex);
+        await User.findOneAndUpdate({ _id: req.user._id }, { isResumeFile: true }, { new: true });
+      }
+    } catch (gitErr) {
+      console.error("GitHub upload error:", gitErr.message || gitErr);
+      return res.status(500).json({ error: "GitHub upload failed", details: (gitErr.message || String(gitErr)) });
+    }
+
+    // call latexonline to compile from the repo
+    const compileUrl = `https://latexonline.cc/compile?git=https://github.com/${GITHUB_USERNAME}/${GITHUB_REPO}&target=${req.user._id}.tex&command=pdflatex`;
+    console.log("Fetching compilation from:", compileUrl);
+
+    let compileResponse;
+    try {
+      compileResponse = await axios.get(compileUrl, { responseType: "arraybuffer", timeout: 120000 });
+    } catch (e) {
+      console.error("Error fetching from latexonline.cc:", e.message || e);
+      return res.status(502).json({ error: "Failed to fetch compilation result", details: e.message || String(e) });
+    }
+
+    // check headers + raw bytes for PDF magic
+    const headers = compileResponse.headers || {};
+    const contentType = (headers["content-type"] || headers["Content-Type"] || "").toLowerCase();
+    const rawBuffer = Buffer.from(compileResponse.data || []);
+    let isPDF = false;
+
+    try {
+      if (contentType.includes("pdf") || contentType === "application/octet-stream") {
+        // may still be PDF
+        if (rawBuffer.length >= 4 && rawBuffer.slice(0, 4).toString() === "%PDF") isPDF = true;
+      } else {
+        // sometimes latexonline returns actual PDF but content-type missing; check magic bytes anyway
+        if (rawBuffer.length >= 4 && rawBuffer.slice(0, 4).toString() === "%PDF") isPDF = true;
+      }
+    } catch (e) {
+      console.error("PDF detection check failed:", e.message || e);
+    }
+
+    if (isPDF) {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="resume_${req.user._id}.pdf"`);
+      return res.send(rawBuffer);
+    }
+
+    // NOT a PDF -> try to parse as text or JSON to show error details
+    let textResp = "";
+    try {
+      textResp = rawBuffer.toString("utf8");
+    } catch (e) {
+      textResp = "";
+    }
+
+    // if it looks like JSON, parse and forward status
+    try {
+      const parsed = JSON.parse(textResp);
+      // if parsed has status & download fields like latexonline format
+      if (parsed && parsed.status === "success" && parsed.download) {
+        return res.json({ pdfUrl: parsed.download });
+      } else {
+        console.error("latexonline returned JSON error:", parsed);
+        return res.status(500).json({ error: "LaTeX compilation returned error", details: parsed || textResp });
+      }
+    } catch (jsonErr) {
+      // not JSON — return the raw text (likely HTML log or error)
+      console.error("latexonline returned non-pdf response (text/html). Length:", textResp.length);
+      return res.status(500).json({
+        error: "LaTeX compilation did not return a PDF",
+        details: textResp.substring(0, 1500), // send limited logs to avoid huge payload
+      });
+    }
+  } catch (e) {
+    console.error("Resume generation error:", e.message || e);
+    return res.status(500).json({ error: "Failed to generate resume", details: (e.message || String(e)) });
+  }
+});
 const getLatexCode = asyncHandler(async (req, res) => {
     try {
         const user = req.user;

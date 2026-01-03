@@ -25,12 +25,20 @@ export default function Education() {
             },
         };
 
+        // axios
+        //     .get(process.env.REACT_APP_SERVER_URL + "/api/form/edu", config)
+        //     .then((res) => {
+        //       setEdu(Array.isArray(res.data) ? res.data : []);
+
+        //     })
+        //     .catch((err) => console.log(err.message));
         axios
-            .get(process.env.REACT_APP_SERVER_URL + "/api/form/edu", config)
-            .then((res) => {
-                setEdu(res.data);
-            })
-            .catch((err) => console.log(err.message));
+    .get(process.env.REACT_APP_SERVER_URL + "/api/form/edu", config)
+    .then((res) => {
+        setEdu(Array.isArray(res.data) ? res.data : []);
+    })
+    .catch((err) => console.log(err.message));
+
     }, [user, navigate]);
 
     const addSchool = () => {

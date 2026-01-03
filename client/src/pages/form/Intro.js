@@ -32,7 +32,15 @@ export default function Intro() {
     axios
       .get(process.env.REACT_APP_SERVER_URL + "/api/form/intro", config)
       .then((res) => {
-        setIntro(res.data);
+      setIntro({
+  name: res.data?.name || "",
+  email: res.data?.email || "",
+  mob_num: res.data?.mob_num || "",
+  portfolio_link: res.data?.portfolio_link || "",
+  linkedin: res.data?.linkedin || "",
+  github: res.data?.github || "",
+});
+
       })
       .catch((err) => console.log(err.message));
   }, [user, navigate]);
@@ -99,7 +107,7 @@ export default function Intro() {
                         id="first-name"
                         autoComplete="given-name"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        placeholder="e.g, Shobhit Tomar"
+                        placeholder="e.g,Anshul Sharma"
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>
@@ -138,7 +146,7 @@ export default function Intro() {
                         autoComplete="email"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         value={intro.mob_num}
-                        placeholder="e.g, +91 98765 43211"
+                        placeholder="e.g, +91 7505936139"
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>
@@ -156,7 +164,7 @@ export default function Intro() {
                         autoComplete="portfolio_link"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         value={intro.portfolio_link}
-                        placeholder="e.g, https://chaseshobhit.vercel.app"
+                        placeholder="e.g, https://anshulsharma.vercel.app"
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>
@@ -174,7 +182,7 @@ export default function Intro() {
                         autoComplete="linkedin"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         value={intro.linkedin}
-                        placeholder="e.g, https://www.linkedin.com/in/chaseshobhit"
+                        placeholder="e.g, https://www.linkedin.com/in/anshulsharma"
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>
@@ -192,7 +200,7 @@ export default function Intro() {
                         autoComplete="github"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         value={intro.github}
-                        placeholder="e.g, https://www.github.com/chaseshobhit"
+                        placeholder="e.g, https://www.github.com/anshulsharma"
                         onChange={(e) => handleOnChange(e)}
                       />
                     </div>

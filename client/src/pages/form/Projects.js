@@ -31,7 +31,8 @@ export default function Projects() {
                 config
             )
             .then((res) => {
-                setProjects(res.data);
+              setProjects(Array.isArray(res.data) ? res.data : []);
+
             })
             .catch((err) => console.log(err.message));
     }, [user, navigate]);

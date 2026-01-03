@@ -31,7 +31,8 @@ export default function Achievements() {
                 config
             )
             .then((res) => {
-                setAchievements(res.data);
+              setAchievements(Array.isArray(res.data) ? res.data : []);
+
             })
             .catch((err) => console.log(err.message));
     }, [user, navigate]);

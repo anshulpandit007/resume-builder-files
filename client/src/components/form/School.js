@@ -34,7 +34,7 @@ export default function School({ edu, setEdu, idx }) {
                                         autoComplete="clg_name"
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         value={edu[idx]["clg_name"]}
-                                        placeholder="e.g, Vellore Institute of Technology (VIT Vellore)"
+                                        placeholder="e.g,  MIET"
                                         onChange={(e) => handleOnChange(e)}
                                     />
                                 </div>
@@ -53,7 +53,7 @@ export default function School({ edu, setEdu, idx }) {
                                         id="clg_location"
                                         autoComplete="clg_location"
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        placeholder="e.g, Vellore, India"
+                                        placeholder="e.g, Meerut , India"
                                         onChange={(e) => handleOnChange(e)}
                                     />
                                 </div>
@@ -72,7 +72,7 @@ export default function School({ edu, setEdu, idx }) {
                                         autoComplete="clg_degree"
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         value={edu[idx]["clg_degree"]}
-                                        placeholder="e.g, Bachelar of Technology"
+                                        placeholder="e.g, Master of Computer Application"
                                         onChange={(e) => handleOnChange(e)}
                                     />
                                 </div>

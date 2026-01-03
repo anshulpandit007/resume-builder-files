@@ -28,7 +28,8 @@ export default function Skills() {
         axios
             .get(process.env.REACT_APP_SERVER_URL + "/api/form/skills", config)
             .then((res) => {
-                setSkills(res.data);
+              setSkills(Array.isArray(res.data) ? res.data : []);
+
             })
             .catch((err) => console.log(err.message));
     }, [user, navigate]);

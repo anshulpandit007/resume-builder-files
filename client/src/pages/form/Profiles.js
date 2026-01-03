@@ -31,7 +31,8 @@ export default function Profiles() {
                 config
             )
             .then((res) => {
-                setProfiles(res.data);
+              setProfiles(Array.isArray(res.data) ? res.data : []);
+
             })
             .catch((err) => console.log(err.message));
     }, [user, navigate]);

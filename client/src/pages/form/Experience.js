@@ -28,7 +28,8 @@ export default function Experience() {
         axios
             .get(process.env.REACT_APP_SERVER_URL + "/api/form/exp", config)
             .then((res) => {
-                setExp(res.data);
+               setExp(Array.isArray(res.data) ? res.data : []);
+
             })
             .catch((err) => console.log(err.message));
     }, [user, navigate]);

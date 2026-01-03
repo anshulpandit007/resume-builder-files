@@ -40,7 +40,7 @@ export default function Achievement({ achievements, setAchievements, idx }) {
                                             name="ach_text"
                                             rows={1}
                                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                            placeholder="e.g, Secured a Global Rank of 101 in Google Kickstart 2022 Round A."
+                                            placeholder="e.g, Secured a Global Rank in JEE Mains."
                                             value={
                                                 achievements[idx]["ach_text"]
                                             }
@@ -62,7 +62,7 @@ export default function Achievement({ achievements, setAchievements, idx }) {
                                         autoComplete="ach_link"
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                                         value={achievements[idx]["ach_link"]}
-                                        placeholder="e.g, https://www.kickstart.com/round-a/ranklist"
+                                        placeholder="e.g, https://www.achievement.com"
                                         onChange={(e) => handleOnChange(e)}
                                     />
                                 </div>
