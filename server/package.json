@@ -4,8 +4,9 @@
   "description": " A Full Stack project for Bild and manage Resumes",
   "main": "server.js",
   "scripts": {
-    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider node server.js",
-    "dev": "cross-env NODE_OPTIONS=--openssl-legacy-provider nodemon server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+
   },
   "keywords": [],
   "author": "Anshul Sharma",
@@ -22,7 +23,8 @@
     "latex.js": "^0.12.6",
     "mongoose": "^7.1.0"
   },
-  "engines": {
-    "node": ">=16"
-  }
+ "engines": {
+  "node": "18.x"
+}
+
 }
